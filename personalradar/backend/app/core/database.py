@@ -46,4 +46,8 @@ class Database:
     @classmethod
     def get_db(cls):
         """Get database instance."""
-        return cls.db 
+        return cls.db
+
+# Dependency for FastAPI
+async def get_database():
+    return Database.db 

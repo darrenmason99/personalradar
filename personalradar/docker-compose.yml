@@ -9,10 +9,14 @@ services:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
+      - MONGODB_URL=mongodb://mongodb:27017
+      - MONGODB_DB=personalradar
     volumes:
       - ./backend:/app
     networks:
       - app-network
+    depends_on:
+      - mongodb
 
   frontend:
     build:
@@ -24,7 +28,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_API_URL=http://localhost:8000/api/v1
     depends_on:
       - backend
     networks:
@@ -38,6 +42,8 @@ services:
       - mongodb_data:/data/db
     environment:
       - MONGO_INITDB_DATABASE=personalradar
+    networks:
+      - app-network
 
 volumes:
   mongodb_data:

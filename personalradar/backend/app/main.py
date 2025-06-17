@@ -1,21 +1,26 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.database import Database
+from .core.config import settings
+from .api.v1 import auth
 
 app = FastAPI(
-    title="Personal Tech Radar",
-    description="AI-powered technology assessment and visualization platform",
-    version="0.1.0"
+    title=settings.PROJECT_NAME,
+    version=settings.VERSION,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-# Configure CORS
+# Set up CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React frontend
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
 
 @app.on_event("startup")
 async def startup_db_client():
@@ -27,10 +32,7 @@ async def shutdown_db_client():
 
 @app.get("/")
 async def root():
-    return {
-        "message": "Welcome to Personal Tech Radar API",
-        "version": "0.1.0"
-    }
+    return {"message": "Welcome to Personal Radar API"}
 
 @app.get("/health")
 async def health_check():
