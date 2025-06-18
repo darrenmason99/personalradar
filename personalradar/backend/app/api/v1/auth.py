@@ -9,6 +9,7 @@ from ...core.database import get_database
 from ...models.user import User, UserCreate
 from pydantic import BaseModel
 import logging
+from typing import Dict, Any
 
 router = APIRouter()
 
@@ -16,7 +17,7 @@ class GoogleAuthRequest(BaseModel):
     token: str
 
 @router.post("/google")
-async def google_auth(request: GoogleAuthRequest, db=Depends(get_database)):
+async def google_auth(request: GoogleAuthRequest, db=Depends(get_database)) -> Dict[str, Any]:
     try:
         token = request.token
         logging.warning(f"Received Google login request with token: {token[:20]}... (truncated)")
@@ -72,8 +73,10 @@ async def google_auth(request: GoogleAuthRequest, db=Depends(get_database)):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-@router.get("/me", response_model=User)
-async def read_users_me(db=Depends(get_database), token: str = Depends(OAuth2PasswordRequestForm)):
+async def get_current_user(db=Depends(get_database), token: str = Depends(OAuth2PasswordRequestForm)) -> User:
     auth_service = AuthService(db)
-    current_user = await auth_service.verify_token(token)
+    return await auth_service.verify_token(token)
+
+@router.get("/me", response_model=User)
+async def read_users_me(current_user: User = Depends(get_current_user)) -> User:
     return current_user 

@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .core.database import Database
 from .core.config import settings
 from .api.v1 import auth
+from .api.v1 import technologies
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -21,6 +22,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
+app.include_router(technologies.router, prefix=f"{settings.API_V1_STR}/technologies", tags=["technologies"])
 
 @app.on_event("startup")
 async def startup_db_client():

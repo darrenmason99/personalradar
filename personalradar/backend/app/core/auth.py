@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Dict, Any
 from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -10,7 +10,7 @@ from ..core.config import settings
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 class AuthService:
-    def __init__(self, db: AsyncIOMotorClient):
+    def __init__(self, db: AsyncIOMotorClient) -> None:
         self.db = db
         self.collection = db.users
 
@@ -38,7 +38,7 @@ class AuthService:
         user_dict["_id"] = str(result.inserted_id)
         return User(**user_dict)
 
-    async def update_user(self, user_id: str, update_data: dict) -> Optional[User]:
+    async def update_user(self, user_id: str, update_data: Dict[str, Any]) -> Optional[User]:
         update_data["updated_at"] = datetime.utcnow()
         result = await self.collection.update_one(
             {"_id": user_id},
@@ -51,7 +51,7 @@ class AuthService:
                 return User(**user_data)
         return None
 
-    def create_access_token(self, data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    def create_access_token(self, data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.utcnow() + expires_delta

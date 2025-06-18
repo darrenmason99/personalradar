@@ -1,14 +1,14 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo import MongoClient
 import os
-from typing import Optional
+from typing import Optional, Any
 
 class Database:
     client: Optional[AsyncIOMotorClient] = None
-    db = None
+    db: Optional[Any] = None
 
     @classmethod
-    async def connect_db(cls):
+    async def connect_db(cls) -> None:
         """Create database connection."""
         mongodb_url = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
         mongodb_db = os.getenv("MONGODB_DB", "personalradar")
@@ -20,7 +20,7 @@ class Database:
         await cls.create_indexes()
         
     @classmethod
-    async def close_db(cls):
+    async def close_db(cls) -> None:
         """Close database connection."""
         if cls.client is not None:
             cls.client.close()
@@ -28,7 +28,7 @@ class Database:
             cls.db = None
 
     @classmethod
-    async def create_indexes(cls):
+    async def create_indexes(cls) -> None:
         """Create necessary indexes for collections."""
         # Technologies collection indexes
         await cls.db.technologies.create_index("name", unique=True)
@@ -44,10 +44,10 @@ class Database:
         await cls.db.assessments.create_index("assessment_date")
 
     @classmethod
-    def get_db(cls):
+    def get_db(cls) -> Any:
         """Get database instance."""
         return cls.db
 
 # Dependency for FastAPI
-async def get_database():
+async def get_database() -> Any:
     return Database.db 
