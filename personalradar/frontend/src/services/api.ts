@@ -35,6 +35,19 @@ api.interceptors.response.use(
   }
 );
 
+export interface Technology {
+  _id?: string;
+  name: string;
+  quadrant: string;
+  ring: string;
+  description: string;
+  source: string;
+  date_of_assessment: string;
+  uri?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export const authApi = {
   loginWithGoogle: async (token: string) => {
     const response = await api.post('/auth/google', { token });
@@ -43,6 +56,25 @@ export const authApi = {
   
   getCurrentUser: async () => {
     const response = await api.get('/auth/me');
+    return response.data;
+  },
+};
+
+export const technologyApi = {
+  list: async (): Promise<Technology[]> => {
+    const response = await api.get('/technologies/');
+    return response.data;
+  },
+  create: async (data: Technology) => {
+    const response = await api.post('/technologies/', data);
+    return response.data;
+  },
+  update: async (id: string, data: Partial<Technology>) => {
+    const response = await api.patch(`/technologies/${id}`, data);
+    return response.data;
+  },
+  delete: async (id: string) => {
+    const response = await api.delete(`/technologies/${id}`);
     return response.data;
   },
 };

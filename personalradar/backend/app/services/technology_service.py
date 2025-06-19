@@ -13,6 +13,10 @@ class TechnologyService:
         tech_dict = tech_data.model_dump()
         tech_dict["created_at"] = datetime.utcnow()
         tech_dict["updated_at"] = datetime.utcnow()
+        # Ensure all new fields are present
+        tech_dict.setdefault("source", "")
+        tech_dict.setdefault("date_of_assessment", datetime.utcnow())
+        tech_dict.setdefault("uri", None)
         try:
             result = await self.collection.insert_one(tech_dict)
             tech_dict["_id"] = str(result.inserted_id)
@@ -30,6 +34,10 @@ class TechnologyService:
 
     async def update_technology(self, tech_id: str, update_data: Dict[str, Any]) -> Optional[Technology]:
         update_data["updated_at"] = datetime.utcnow()
+        # Ensure all new fields are present in update
+        update_data.setdefault("source", "")
+        update_data.setdefault("date_of_assessment", datetime.utcnow())
+        update_data.setdefault("uri", None)
         result = await self.collection.find_one_and_update(
             {"_id": ObjectId(tech_id)},
             {"$set": update_data},

@@ -35,6 +35,9 @@ class Database:
         await cls.db.technologies.create_index("category")
         await cls.db.technologies.create_index("status")
         await cls.db.technologies.create_index("last_assessed")
+        await cls.db.technologies.create_index("source")
+        await cls.db.technologies.create_index("date_of_assessment")
+        await cls.db.technologies.create_index("uri")
         
         # User preferences collection indexes
         await cls.db.user_preferences.create_index("user_id", unique=True)

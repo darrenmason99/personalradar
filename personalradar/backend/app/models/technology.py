@@ -7,6 +7,9 @@ class TechnologyBase(BaseModel):
     quadrant: str  # Techniques, Tools, Platforms, Languages & Frameworks
     ring: str      # Hold, Assess, Trial, Adopt
     description: Optional[str] = None
+    source: Optional[str] = None
+    date_of_assessment: Optional[datetime] = None
+    uri: Optional[str] = None
 
 class TechnologyCreate(TechnologyBase):
     pass

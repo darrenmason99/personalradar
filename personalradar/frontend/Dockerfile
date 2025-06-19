@@ -1,4 +1,4 @@
-FROM node:20-slim
+FROM node:18-alpine
 
 WORKDIR /app
 
@@ -6,10 +6,12 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copy the rest of the application
 COPY . .
+
+EXPOSE 3000
 
 # Start the application
 CMD ["npm", "start"] 

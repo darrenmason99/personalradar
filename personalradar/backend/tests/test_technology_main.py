@@ -34,7 +34,10 @@ async def test_create_and_list_technology_main(test_db):
             "name": "Kubernetes",
             "quadrant": "Platforms",
             "ring": "Adopt",
-            "description": "Container orchestration platform"
+            "description": "Container orchestration platform",
+            "source": "Thoughtworks Radar",
+            "date_of_assessment": "2023-01-01T00:00:00Z",
+            "uri": "https://kubernetes.io/"
         }
         create_resp = await ac.post("/api/v1/technologies/", json=tech_data)
         assert create_resp.status_code == status.HTTP_201_CREATED
@@ -43,6 +46,9 @@ async def test_create_and_list_technology_main(test_db):
         assert created["quadrant"] == tech_data["quadrant"]
         assert created["ring"] == tech_data["ring"]
         assert created["description"] == tech_data["description"]
+        assert created["source"] == tech_data["source"]
+        assert created["date_of_assessment"].startswith("2023-01-01")
+        assert created["uri"] == tech_data["uri"]
         assert "_id" in created
         assert "created_at" in created
         assert "updated_at" in created

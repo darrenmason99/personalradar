@@ -36,7 +36,10 @@ async def test_create_and_list_technology(test_db):
             "name": "Kubernetes",
             "quadrant": "Platforms",
             "ring": "Adopt",
-            "description": "Container orchestration platform"
+            "description": "Container orchestration platform",
+            "source": "Thoughtworks Radar",
+            "date_of_assessment": "2023-01-01T00:00:00Z",
+            "uri": "https://kubernetes.io/"
         }
         create_resp = await ac.post("/api/v1/technologies/", json=tech_data)
         assert create_resp.status_code == status.HTTP_201_CREATED
@@ -45,6 +48,9 @@ async def test_create_and_list_technology(test_db):
         assert created["quadrant"] == tech_data["quadrant"]
         assert created["ring"] == tech_data["ring"]
         assert created["description"] == tech_data["description"]
+        assert created["source"] == tech_data["source"]
+        assert created["date_of_assessment"].startswith("2023-01-01")
+        assert created["uri"] == tech_data["uri"]
         assert "_id" in created
         assert "created_at" in created
         assert "updated_at" in created
@@ -64,7 +70,10 @@ async def test_create_technology_duplicate(test_db):
             "name": "Kubernetes",
             "quadrant": "Platforms",
             "ring": "Adopt",
-            "description": "Container orchestration platform"
+            "description": "Container orchestration platform",
+            "source": "Thoughtworks Radar",
+            "date_of_assessment": "2023-01-01T00:00:00Z",
+            "uri": "https://kubernetes.io/"
         }
         # First creation should succeed
         create_resp1 = await ac.post("/api/v1/technologies/", json=tech_data)
@@ -83,16 +92,22 @@ async def test_update_and_delete_technology(test_db):
         name="Docker",
         quadrant="Tools",
         ring="Adopt",
-        description="Containerization platform"
+        description="Containerization platform",
+        source="Docker Docs",
+        date_of_assessment="2023-01-02T00:00:00Z",
+        uri="https://www.docker.com/"
     )
     created = await service.create_technology(tech_data)
     tech_id = created.id
     # Update the technology
-    update_fields = {"description": "Updated description", "ring": "Trial"}
+    update_fields = {"description": "Updated description", "ring": "Trial", "source": "Updated Source", "date_of_assessment": "2023-01-03T00:00:00Z", "uri": "https://updated.com/"}
     updated = await service.update_technology(tech_id, update_fields)
     assert updated is not None
     assert updated.description == "Updated description"
     assert updated.ring == "Trial"
+    assert updated.source == "Updated Source"
+    assert updated.date_of_assessment.isoformat().startswith("2023-01-03")
+    assert updated.uri == "https://updated.com/"
     # Delete the technology
     deleted = await service.delete_technology(tech_id)
     assert deleted is not None
@@ -111,19 +126,25 @@ async def test_update_and_delete_technology_api(test_db):
             "name": "Terraform",
             "quadrant": "Tools",
             "ring": "Trial",
-            "description": "IaC tool"
+            "description": "IaC tool",
+            "source": "HashiCorp",
+            "date_of_assessment": "2023-01-04T00:00:00Z",
+            "uri": "https://www.terraform.io/"
         }
         create_resp = await ac.post("/api/v1/technologies/", json=tech_data)
         assert create_resp.status_code == status.HTTP_201_CREATED
         created = create_resp.json()
         tech_id = created["_id"]
         # Update the technology
-        update_data = {"description": "Updated IaC tool", "ring": "Adopt"}
+        update_data = {"description": "Updated IaC tool", "ring": "Adopt", "source": "Updated HashiCorp", "date_of_assessment": "2023-01-05T00:00:00Z", "uri": "https://updated-terraform.io/"}
         update_resp = await ac.patch(f"/api/v1/technologies/{tech_id}", json=update_data)
         assert update_resp.status_code == status.HTTP_200_OK
         updated = update_resp.json()
         assert updated["description"] == "Updated IaC tool"
         assert updated["ring"] == "Adopt"
+        assert updated["source"] == "Updated HashiCorp"
+        assert updated["date_of_assessment"].startswith("2023-01-05")
+        assert updated["uri"] == "https://updated-terraform.io/"
         # Delete the technology
         delete_resp = await ac.delete(f"/api/v1/technologies/{tech_id}")
         assert delete_resp.status_code == status.HTTP_200_OK
@@ -152,7 +173,10 @@ async def test_update_and_delete_technology_api_edge_cases(test_db):
             "name": "EdgeCaseTech",
             "quadrant": "Tools",
             "ring": "Trial",
-            "description": "Edge case test"
+            "description": "Edge case test",
+            "source": "Edge Source",
+            "date_of_assessment": "2023-01-06T00:00:00Z",
+            "uri": "https://edgecase.com/"
         }
         create_resp = await ac.post("/api/v1/technologies/", json=tech_data)
         assert create_resp.status_code == status.HTTP_201_CREATED

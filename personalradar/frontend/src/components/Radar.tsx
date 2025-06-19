@@ -1,126 +1,158 @@
-import React, { useEffect, useRef } from 'react';
-import * as d3 from 'd3';
+import React, { useEffect, useState } from 'react';
+import {
+  Chart as ChartJS,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Radar } from 'react-chartjs-2';
+import { technologyApi, Technology } from '../services/api';
+import { CircularProgress, Box } from '@mui/material';
+
+// Register ChartJS components
+ChartJS.register(
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend
+);
 
 interface RadarProps {
-  data: {
-    name: string;
-    value: number;
-  }[];
   width?: number;
   height?: number;
 }
 
-const Radar: React.FC<RadarProps> = ({ 
-  data, 
-  width = 400, 
-  height = 400 
-}) => {
-  const svgRef = useRef<SVGSVGElement>(null);
+const QUADRANTS = [
+  'Techniques',
+  'Tools',
+  'Platforms',
+  'Languages & Frameworks'
+];
+
+const RINGS = ['Adopt', 'Trial', 'Assess', 'Hold'];
+
+const RING_COLORS = {
+  'Adopt': 'rgba(75, 192, 192, 0.6)',
+  'Trial': 'rgba(54, 162, 235, 0.6)',
+  'Assess': 'rgba(255, 206, 86, 0.6)',
+  'Hold': 'rgba(255, 99, 132, 0.6)'
+};
+
+const RadarChart: React.FC<RadarProps> = ({ width = 600, height = 600 }) => {
+  const [technologies, setTechnologies] = useState<Technology[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!svgRef.current || !data.length) return;
+    const fetchTechnologies = async () => {
+      try {
+        const response = await technologyApi.list();
+        setTechnologies(response);
+      } catch (error) {
+        console.error('Error fetching technologies:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Clear previous content
-    d3.select(svgRef.current).selectAll("*").remove();
+    fetchTechnologies();
+  }, []);
 
-    const svg = d3.select(svgRef.current)
-      .attr("width", width)
-      .attr("height", height);
+  const processData = () => {
+    const datasets = RINGS.map(ring => {
+      const data = QUADRANTS.map(quadrant => {
+        return technologies.filter(tech => 
+          tech.quadrant === quadrant && tech.ring === ring
+        ).length;
+      });
 
-    // Calculate angles for each data point
-    const angleSlice = (Math.PI * 2) / data.length;
+      return {
+        label: ring,
+        data: data,
+        backgroundColor: RING_COLORS[ring as keyof typeof RING_COLORS],
+        borderColor: RING_COLORS[ring as keyof typeof RING_COLORS].replace('0.6', '1'),
+        borderWidth: 1,
+        pointBackgroundColor: RING_COLORS[ring as keyof typeof RING_COLORS].replace('0.6', '1'),
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: RING_COLORS[ring as keyof typeof RING_COLORS].replace('0.6', '1'),
+      };
+    });
 
-    // Create scales
-    const radius = Math.min(width, height) / 2;
-    const rScale = d3.scaleLinear()
-      .range([0, radius])
-      .domain([0, 1]);
+    return {
+      labels: QUADRANTS,
+      datasets: datasets,
+    };
+  };
 
-    // Create the radar chart
-    const radarLine = d3.lineRadial<{ value: number }>()
-      .radius(d => rScale(d.value))
-      .angle((_, i) => i * angleSlice);
-
-    // Create the background circles
-    const levels = 5;
-    const gridCircles = svg.selectAll(".gridCircle")
-      .data(d3.range(1, levels + 1).reverse())
-      .enter()
-      .append("circle")
-      .attr("class", "gridCircle")
-      .attr("r", d => radius / levels * d)
-      .style("fill", "#CDCDCD")
-      .style("stroke", "#CDCDCD")
-      .style("fill-opacity", 0.1);
-
-    // Create the axes
-    const axes = svg.selectAll(".axis")
-      .data(data)
-      .enter()
-      .append("g")
-      .attr("class", "axis");
-
-    // Add the axis lines
-    axes.append("line")
-      .attr("x1", 0)
-      .attr("y1", 0)
-      .attr("x2", (_, i) => rScale(1.1) * Math.cos(angleSlice * i - Math.PI / 2))
-      .attr("y2", (_, i) => rScale(1.1) * Math.sin(angleSlice * i - Math.PI / 2))
-      .attr("class", "line")
-      .style("stroke", "white")
-      .style("stroke-width", "2px");
-
-    // Add the labels
-    axes.append("text")
-      .attr("class", "legend")
-      .style("font-size", "11px")
-      .attr("text-anchor", "middle")
-      .attr("dy", "0.35em")
-      .attr("x", (_, i) => rScale(1.15) * Math.cos(angleSlice * i - Math.PI / 2))
-      .attr("y", (_, i) => rScale(1.15) * Math.sin(angleSlice * i - Math.PI / 2))
-      .text(d => d.name)
-      .call(wrap, 60);
-
-    // Draw the radar
-    svg.append("path")
-      .datum(data)
-      .attr("class", "radarArea")
-      .attr("d", radarLine)
-      .style("fill", "#BADA55")
-      .style("fill-opacity", 0.4)
-      .style("stroke", "#BADA55")
-      .style("stroke-width", "2px");
-
-    // Wrap text function
-    function wrap(text: d3.Selection<SVGTextElement, any, any, any>, width: number) {
-      text.each(function() {
-        const text = d3.select(this);
-        const words = text.text().split(/\s+/).reverse();
-        let word;
-        let line: string[] = [];
-        let lineNumber = 0;
-        const lineHeight = 1.1;
-        const y = text.attr("y");
-        const dy = parseFloat(text.attr("dy"));
-        let tspan = text.text(null).append("tspan").attr("x", text.attr("x")).attr("y", y).attr("dy", dy + "em");
-        
-        while (word = words.pop()) {
-          line.push(word);
-          tspan.text(line.join(" "));
-          if (tspan.node()?.getComputedTextLength()! > width) {
-            line.pop();
-            tspan.text(line.join(" "));
-            line = [word];
-            tspan = text.append("tspan").attr("x", text.attr("x")).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+  const options = {
+    scales: {
+      r: {
+        angleLines: {
+          display: true,
+          color: 'rgba(128, 128, 128, 0.2)',
+        },
+        suggestedMin: 0,
+        suggestedMax: Math.max(...technologies.map(t => 
+          technologies.filter(tech => tech.quadrant === t.quadrant && tech.ring === t.ring).length
+        ), 1),
+        ticks: {
+          display: false,
+        },
+        pointLabels: {
+          font: {
+            size: 14,
+            weight: 'bold' as const,
+          },
+          color: '#333',
+        },
+      },
+    },
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: {
+          font: {
+            size: 12,
+          },
+          padding: 20,
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            const quadrant = context.label;
+            const ring = context.dataset.label;
+            const count = context.raw;
+            const techs = technologies.filter(t => t.quadrant === quadrant && t.ring === ring);
+            return [
+              `${ring} - ${count} technologies`,
+              ...techs.map(t => `• ${t.name}`)
+            ];
           }
         }
-      });
-    }
-  }, [data, width, height]);
+      }
+    },
+    maintainAspectRatio: false,
+  };
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height={height}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    <svg ref={svgRef} style={{ margin: '20px' }} />
+    <Box width={width} height={height}>
+      <Radar data={processData()} options={options} />
+    </Box>
   );
 };
 
-export default Radar; 
+export default RadarChart; 

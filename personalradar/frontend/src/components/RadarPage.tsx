@@ -1,65 +1,68 @@
-import React from 'react';
-import { Container, Typography, Paper, AppBar, Toolbar, Button, Box, Avatar } from '@mui/material';
+import React, { useState } from 'react';
+import { Container, Typography, Paper, AppBar, Toolbar, Button, Box, Avatar, Tabs, Tab } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import Radar from './Radar';
-
-const sampleData = [
-  { name: "Frontend", value: 0.8 },
-  { name: "Backend", value: 0.7 },
-  { name: "DevOps", value: 0.6 },
-  { name: "Database", value: 0.75 },
-  { name: "Security", value: 0.65 },
-  { name: "Testing", value: 0.85 }
-];
+import ThoughtworksRadar from './ThoughtworksRadar';
+import Technologies from './Technologies';
 
 const RadarPage: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(0);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };
+
   return (
-    <div>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Personal Tech Radar
+            Personal Radar
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {user?.picture && (
-              <Avatar src={user.picture} alt={user.full_name} />
-            )}
-            <Typography variant="body1">
-              {user?.full_name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              ID: {user?.id}
-            </Typography>
-            <Button color="inherit" onClick={handleLogout}>
-              Logout
-            </Button>
-          </Box>
+          {user && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography variant="body1">
+                {user.email}
+              </Typography>
+              <Avatar sx={{ width: 32, height: 32 }}>
+                {user.email.charAt(0).toUpperCase()}
+              </Avatar>
+              <Button color="inherit" onClick={handleLogout}>
+                Logout
+              </Button>
+            </Box>
+          )}
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4, flex: 1 }}>
+        <Paper sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <Typography variant="h4" gutterBottom>
             Technology Radar
           </Typography>
           <Typography variant="body1" paragraph>
             Visualize your technology stack and track your progress across different areas.
           </Typography>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <Radar data={sampleData} width={600} height={600} />
-          </div>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={activeTab} onChange={handleTabChange}>
+              <Tab label="Radar" />
+              <Tab label="Technologies" />
+            </Tabs>
+          </Box>
+          <Box sx={{ flex: 1, overflow: 'auto' }}>
+            {activeTab === 0 && <ThoughtworksRadar />}
+            {activeTab === 1 && <Technologies />}
+          </Box>
         </Paper>
       </Container>
-    </div>
+    </Box>
   );
 };
 
