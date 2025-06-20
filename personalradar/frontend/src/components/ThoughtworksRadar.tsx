@@ -57,18 +57,10 @@ const ThoughtworksRadar: React.FC = () => {
   const handleBlipClick = (clickedBlip: any) => {
     console.log('Blip clicked:', clickedBlip);
     
-    // Find all technologies in the same quadrant and ring
-    const techsInArea = technologies.filter(tech => 
-      tech.quadrant === clickedBlip.quadrant && tech.ring === clickedBlip.ring
-    );
-    
-    console.log('Technologies in area:', techsInArea);
-    
-    if (techsInArea.length > 0) {
-      setSelectedTechnologies(techsInArea);
-      setPopupOpen(true);
-      console.log('Opening popup with', techsInArea.length, 'technologies');
-    }
+    // Only show the specific blip that was clicked
+    setSelectedTechnologies([clickedBlip]);
+    setPopupOpen(true);
+    console.log('Opening popup with clicked blip:', clickedBlip.name);
   };
 
   const handleClosePopup = () => {
