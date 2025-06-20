@@ -19,17 +19,13 @@ const Technologies: React.FC = () => {
   const [technologies, setTechnologies] = useState<Technology[]>([]);
   const [form, setForm] = useState(initialForm);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
   const fetchTechnologies = async () => {
-    setLoading(true);
     try {
       const data = await technologyApi.list();
       setTechnologies(data);
     } catch (err) {
       // handle error
-    } finally {
-      setLoading(false);
     }
   };
 

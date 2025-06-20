@@ -48,6 +48,18 @@ export interface Technology {
   updated_at?: string;
 }
 
+export interface NewsSource {
+  _id?: string;
+  name: string;
+  url: string;
+  description?: string;
+  cadence_days: number;
+  is_active: boolean;
+  last_checked?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export const authApi = {
   loginWithGoogle: async (token: string) => {
     const response = await api.post('/auth/google', { token });
@@ -75,6 +87,33 @@ export const technologyApi = {
   },
   delete: async (id: string) => {
     const response = await api.delete(`/technologies/${id}`);
+    return response.data;
+  },
+};
+
+export const newsSourceApi = {
+  list: async (): Promise<NewsSource[]> => {
+    const response = await api.get('/news-sources/');
+    return response.data;
+  },
+  create: async (data: NewsSource) => {
+    const response = await api.post('/news-sources/', data);
+    return response.data;
+  },
+  update: async (id: string, data: Partial<NewsSource>) => {
+    const response = await api.patch(`/news-sources/${id}`, data);
+    return response.data;
+  },
+  delete: async (id: string) => {
+    const response = await api.delete(`/news-sources/${id}`);
+    return response.data;
+  },
+  markAsChecked: async (id: string) => {
+    const response = await api.post(`/news-sources/${id}/check`);
+    return response.data;
+  },
+  getDueForChecking: async (): Promise<NewsSource[]> => {
+    const response = await api.get('/news-sources/due/checking');
     return response.data;
   },
 };

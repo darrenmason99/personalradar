@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ThoughtworksRadar from './ThoughtworksRadar';
 import Technologies from './Technologies';
+import NewsSources from './NewsSources';
 
 const RadarPage: React.FC = () => {
   const { user, logout } = useAuth();
@@ -54,11 +55,13 @@ const RadarPage: React.FC = () => {
             <Tabs value={activeTab} onChange={handleTabChange}>
               <Tab label="Radar" />
               <Tab label="Technologies" />
+              <Tab label="News Sources" />
             </Tabs>
           </Box>
           <Box sx={{ flex: 1, overflow: 'auto' }}>
             {activeTab === 0 && <ThoughtworksRadar />}
             {activeTab === 1 && <Technologies />}
+            {activeTab === 2 && <NewsSources />}
           </Box>
         </Paper>
       </Container>
