@@ -29,6 +29,12 @@ class TechnologyService:
         techs = []
         async for doc in self.collection.find():
             doc["_id"] = str(doc["_id"])
+            # Fix date_of_assessment if it's a string
+            if "date_of_assessment" in doc and isinstance(doc["date_of_assessment"], str):
+                try:
+                    doc["date_of_assessment"] = datetime.fromisoformat(doc["date_of_assessment"])
+                except Exception:
+                    doc["date_of_assessment"] = None
             techs.append(Technology(**doc))
         return techs
 
@@ -45,6 +51,12 @@ class TechnologyService:
         )
         if result:
             result["_id"] = str(result["_id"])
+            # Fix date_of_assessment if it's a string
+            if "date_of_assessment" in result and isinstance(result["date_of_assessment"], str):
+                try:
+                    result["date_of_assessment"] = datetime.fromisoformat(result["date_of_assessment"])
+                except Exception:
+                    result["date_of_assessment"] = None
             return Technology(**result)
         return None
 

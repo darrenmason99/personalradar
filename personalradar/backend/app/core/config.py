@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str
     GOOGLE_REDIRECT_URI: str = "http://localhost:3000/auth/callback"
     
+    # OpenAI
+    OPENAI_API_KEY: str
+    
     # CORS
     BACKEND_CORS_ORIGINS: list[str] = [
         "http://localhost:3000",

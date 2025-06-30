@@ -60,6 +60,22 @@ export interface NewsSource {
   updated_at?: string;
 }
 
+export interface TechnologyDiscovery {
+  id?: string;
+  name: string;
+  description: string;
+  source_url: string;
+  news_source_id: string;
+  discovered_at: string;
+  article_title?: string;
+  article_url?: string;
+  confidence_score: number;
+  category?: string;
+  status: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export const authApi = {
   loginWithGoogle: async (token: string) => {
     const response = await api.post('/auth/google', { token });
@@ -114,6 +130,44 @@ export const newsSourceApi = {
   },
   getDueForChecking: async (): Promise<NewsSource[]> => {
     const response = await api.get('/news-sources/due/checking');
+    return response.data;
+  },
+};
+
+export const technologyDiscoveryApi = {
+  list: async (): Promise<TechnologyDiscovery[]> => {
+    const response = await api.get('/technology-discoveries/');
+    return response.data;
+  },
+  get: async (id: string): Promise<TechnologyDiscovery> => {
+    const response = await api.get(`/technology-discoveries/${id}`);
+    return response.data;
+  },
+  create: async (data: TechnologyDiscovery) => {
+    const response = await api.post('/technology-discoveries/', data);
+    return response.data;
+  },
+  updateStatus: async (id: string, status: string) => {
+    const response = await api.patch(`/technology-discoveries/${id}/status?status=${status}`);
+    return response.data;
+  },
+  delete: async (id: string) => {
+    const response = await api.delete(`/technology-discoveries/${id}`);
+    return response.data;
+  },
+  runDiscovery: async (newsSourceId?: string) => {
+    const url = newsSourceId 
+      ? `/technology-discoveries/run-discovery?news_source_id=${newsSourceId}`
+      : '/technology-discoveries/run-discovery';
+    const response = await api.post(url);
+    return response.data;
+  },
+  getNewSince: async (newsSourceId: string, days: number = 7) => {
+    const response = await api.get(`/technology-discoveries/new-since/${newsSourceId}?days=${days}`);
+    return response.data;
+  },
+  getStats: async () => {
+    const response = await api.get('/technology-discoveries/stats/summary');
     return response.data;
   },
 };
